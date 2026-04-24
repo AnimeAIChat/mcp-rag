@@ -130,9 +130,12 @@ class OpenAICompatibleEmbeddingModel(EmbeddingModel):
 
         response = await self.client.post("/embeddings", json=payload)
         if response.status_code != 200:
-            raise RuntimeError(f"Embedding API error: {response.status_code} - {response.text}")
-
-        data = response.json()
+            raise RuntimeError(f"Embedding API error: {response.status_code} - {response.text[:500]}")
+        
+        try:
+            data = response.json()
+        except Exception as e:
+            raise RuntimeError(f"Embedding API returned invalid JSON: {e}, response text: {response.text[:500]}")
         return [item["embedding"] for item in data["data"]]
 
     async def close(self) -> None:

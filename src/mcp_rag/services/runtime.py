@@ -342,7 +342,7 @@ class ServiceRuntime:
     def build_embedding_model(self, provider: str | None = None):
         provider_name = canonical_provider_name(provider or self._embedding_provider_name() or "")
         provider_config = self._provider_config(provider_name)
-        if provider_config is not None:
+        if provider_config is not None and provider_config.base_url:
             model_name = (
                 getattr(provider_config, "embedding_model", None)
                 or getattr(provider_config, "model", None)
@@ -380,7 +380,7 @@ class ServiceRuntime:
             base_url = variant.get("embedding_base_url") or getattr(provider_config, "base_url", None)
             api_key = getattr(provider_config, "api_key", None)
             dimensions = variant.get("embedding_dimensions")
-            if provider_config is not None or base_url:
+            if (provider_config is not None and provider_config.base_url) or base_url:
                 model = OpenAICompatibleEmbeddingModel(
                     api_key=api_key,
                     base_url=base_url,
@@ -819,7 +819,7 @@ class ServiceRuntime:
                 await llm_model.initialize()
                 return llm_model
 
-            if provider_config is not None:
+            if provider_config is not None and provider_config.base_url:
                 from ..llm import OpenAICompatibleLLMModel
 
                 if not api_key:

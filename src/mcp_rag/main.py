@@ -3,15 +3,32 @@
 import logging
 import asyncio
 from pathlib import Path
+from logging.handlers import RotatingFileHandler
 import uvicorn
 
 from .config import config_manager
 from .http_server import app as default_http_app
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+LOGS_DIR = Path("/data/logs")
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+
+file_handler = RotatingFileHandler(
+    LOGS_DIR / "mcp-rag.log",
+    maxBytes=10 * 1024 * 1024,
+    backupCount=5,
+    encoding="utf-8"
 )
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+file_handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+
+root_logger.addHandler(file_handler)
+root_logger.addHandler(console_handler)
 
 logger = logging.getLogger(__name__)
 
